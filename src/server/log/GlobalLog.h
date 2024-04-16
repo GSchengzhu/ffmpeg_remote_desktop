@@ -46,7 +46,7 @@ private:
 BOOST_LOG_GLOBAL_LOGGER(MyLogger, boost::log::sources::severity_logger_mt<GlobalLog::SeverityLevel>)
 
 
-#define Log_DEBUG     BOOST_LOG_SEV(MyLogger::get(),GlobalLog::Log_Debug)
-#define Log_INFO      BOOST_LOG_SEV(MyLogger::get(),GlobalLog::Log_Info)
+#define LOG_DEBUG     BOOST_LOG_SEV(MyLogger::get(),GlobalLog::Log_Debug)
+#define LOG_INFO      BOOST_LOG_SEV(MyLogger::get(),GlobalLog::Log_Info)
 #define LOG_WARNING   BOOST_LOG_SEV(MyLogger::get(),GlobalLog::Log_Warning)
 #define LOG_ERROR     BOOST_LOG_SEV(MyLogger::get(),GlobalLog::Log_Error)
