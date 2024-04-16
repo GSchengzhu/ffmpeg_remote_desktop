@@ -96,11 +96,13 @@ void GlobalLog::init()
         expr::stream << "[" 
                      << expr::format_date_time(log_timestamp,"%Y-%m-%d %H:%M:%S")
                      << "]"
-                     << expr::format_date_time(log_uptime,"%O:%M:%S")
+                    //  << expr::format_date_time(log_uptime,"%O:%M:%S")
                      << expr::format_named_scope(log_scope,keywords::format = "%n")
                      << "<" << log_severity << ">" << expr::message;
     
     logging::add_common_attributes();
+    logging::core::get()->add_thread_attribute("Scope",attrs::named_scope());
+    logging::core::get()->add_global_attribute("Uptime", attrs::timer());
 
     auto console_sink = logging::add_console_log();
     auto file_sink = logging::add_file_log(
@@ -129,7 +131,7 @@ void GlobalLog::init()
     logging::core::get()->add_sink(file_sink);
 
 
-    logging::core::get()->add_thread_attribute("Scope",attrs::named_scope());
+    
     m_init = true;
 }
 
