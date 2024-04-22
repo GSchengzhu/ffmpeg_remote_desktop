@@ -1,5 +1,0 @@
-/home/sos/code/github/gusuchengzhu/ffmpeg_remote_desktop/build/CMakeFiles/rebuild_cache.dir
-/home/sos/code/github/gusuchengzhu/ffmpeg_remote_desktop/build/CMakeFiles/edit_cache.dir
-/home/sos/code/github/gusuchengzhu/ffmpeg_remote_desktop/build/src/CMakeFiles/rebuild_cache.dir
-/home/sos/code/github/gusuchengzhu/ffmpeg_remote_desktop/build/src/CMakeFiles/edit_cache.dir
-/home/sos/code/github/gusuchengzhu/ffmpeg_remote_desktop/build/src/CMakeFiles/SERVER.dir
