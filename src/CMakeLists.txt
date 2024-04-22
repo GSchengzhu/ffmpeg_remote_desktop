@@ -8,6 +8,7 @@ endif(Boost_FOUND)
 
 set(SERVER_SRC server/main.cpp)
 list(APPEND SERVER_SRC server/log/GlobalLog.cpp)
+list(APPEND SERVER_SRC server/ScreenRecorder/ScreenRecoder.cpp)
 
 add_executable(SERVER ${SERVER_SRC})
-target_link_libraries(SERVER Boost::log_setup Boost::log Boost::date_time)
+target_link_libraries(SERVER Boost::log_setup Boost::log Boost::date_time -lX11 -lXext -lpng)

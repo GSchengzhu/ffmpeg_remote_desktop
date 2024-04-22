@@ -4,6 +4,15 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/XShm.h>
+#include <csetjmp>
+#include <cstddef>
+#include <cstdio>
+#include <libpng16/pngconf.h>
+#include <string>
+
+#include <libpng16/png.h>
+#include <vector>
+
 
 
 bool X11DesktopCapture::init()
@@ -107,19 +116,123 @@ void X11DesktopCapture::capture()
         LOG_ERROR << "X11DesktopCapture::capture error";
         return;
     }
+    LOG_INFO << "bits_per_pixel: " << m_x_shm_image->bits_per_pixel;
+    LOG_INFO << "depth: " << m_x_shm_image->depth;
+    LOG_INFO << "bytes_per_line: " << m_x_shm_image->bytes_per_line;
+    
+    std::vector<std::vector<unsigned char>> image_data;
+    unsigned long red_mask = m_x_shm_image->red_mask;
+    unsigned long green_mask = m_x_shm_image->green_mask;
+    unsigned long blue_mask = m_x_shm_image->blue_mask;
 
-    FramePacket tmp(m_x_shm_image->data,m_screen_size,FramePacket::RGBA);
-    tmp.saveToFile("./frame.rgba");
+    for(int y = 0; y < m_x_shm_image->height; y++)
+    {
+        std::vector<unsigned char> rowData;
+        for(int x = 0; x < m_x_shm_image->width; x++)
+        {
+            unsigned long pixel = XGetPixel(m_x_shm_image, x, y);
 
+            unsigned char red = (pixel & red_mask) >> 16;
+            unsigned char green = (pixel & green_mask) >> 8;
+            unsigned char blue = (pixel & blue_mask);
+            rowData.push_back(red);
+            rowData.push_back(green);
+            rowData.push_back(blue);
+        }
+        image_data.push_back(rowData);
+    }
+
+    FramePacket test(image_data,m_x_shm_image->width,m_x_shm_image->height,m_x_shm_image->depth);
+    // test.saveToPng("test.png");
     return;
 }
 
 void FramePacket::saveToFile(std::string path)
 {
-    LOG_INFO << "frame packet size: " << m_size;
     FILE *fp = fopen(path.c_str(), "w");
-    size_t written = fwrite(m_data.data(), 1, m_size, fp);
-     LOG_INFO << "written size: " << written;
+    if(!fp)
+    {
+        LOG_ERROR << "open file failed";
+        return;
+    }
+
+    for(auto i = 0; i < m_rgb_data.size(); i++)
+    {
+        fwrite(m_rgb_data[i].data(), 1, m_rgb_data[i].size(), fp);
+    }
     fclose(fp);
+}
+
+void FramePacket::saveToPng(std::string path)
+{
+    png_structp png_ptr;
+    png_infop info_ptr;
+    png_colorp palette;
+    
+    FILE *fp = fopen(path.c_str(),"wb+");
+    if(!fp)
+    {
+        LOG_ERROR << "fopen error";
+        return;
+    }
+
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if(!png_ptr)
+    {
+        LOG_ERROR << "png_create_write_struct failed";
+        return;
+    }
+    
+    do {
+        
+        info_ptr = png_create_info_struct(png_ptr);
+        if(!info_ptr)
+        {
+            LOG_ERROR << "png_create_info_struct failed";
+            break;
+        }
+        
+        if(setjmp(png_jmpbuf(png_ptr)))
+        {
+            LOG_ERROR << "set jmp error";
+            break;
+        }
+
+
+        // png_init_io(png_ptr, fp);
+        png_init_io(png_ptr, fp);
+        png_set_IHDR(png_ptr, info_ptr, m_width, m_height, 8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+
+        png_write_info(png_ptr, info_ptr);
+        
+        png_bytep row_pointers[m_height];
+        
+        if(m_height > PNG_UINT_32_MAX/ (sizeof(png_bytep)))
+        {
+            png_error(png_ptr,"Image is too tall to process to memory");
+            break;
+        }
+        
+        // unsigned char * image_ = (unsigned char*)->data;
+        for(int k = 0; k < m_height; k++)
+        {
+            // row_pointers[k] = image_+ k * m_width;
+            
+            row_pointers[k] = (png_bytep)reinterpret_cast<unsigned char*>(m_rgb_data[k].data());
+        }
+
+        png_write_image(png_ptr, row_pointers);
+        png_write_end(png_ptr, info_ptr);
+    }while (false);
+    
+    png_destroy_write_struct(&png_ptr, NULL);
+    fclose(fp);
+
+}
+
+void FramePacket::saveToJpeg(std::string path)
+{
+    
+
 }
 

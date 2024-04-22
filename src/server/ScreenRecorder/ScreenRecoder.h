@@ -7,6 +7,7 @@
 #include <X11/extensions/XShm.h>
 #include <cstddef>
 #include <sys/shm.h>
+#include <utility>
 #include <vector>
 #include <string>
 
@@ -22,22 +23,28 @@ public:
         YUV420
     };
 
-    FramePacket(char* begin,int byte_size,FramePacket::FrameType type)
-        :m_data(begin,begin+byte_size),
-         m_size(byte_size),
-         m_type(type)
+    FramePacket(std::vector<std::vector<unsigned char>> rgb,int width,int height,int depth)
+        :m_rgb_data(std::move(rgb)),
+         m_width(width),
+         m_height(height),
+         m_depth(depth)
+         
     {
-
+        
     }
 
     void saveToFile(std::string path);
-
-    // void 
+    void saveToPng(std::string path);
+    void saveToJpeg(std::string path);
+    // void saveToYuv444(std::string path);
+    // void saveToYuv422(std::string path);
+    // void saveToYuv420(std::string path);
 
 private:
-    int m_size;
-    FrameType m_type;
-    std::vector<unsigned char> m_data;
+    int m_width;
+    int m_height;
+    int m_depth;
+    std::vector<std::vector<unsigned char>> m_rgb_data;
 };
 
 
