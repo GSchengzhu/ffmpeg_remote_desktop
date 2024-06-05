@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.16.3)
 
-project(FFMPEG_REMOTE_DESKTOP)
+project(FFMPEG_H264_ENCODE)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+include_directories(/usr/local/ffmpeg/include)
+link_directories(/usr/local/ffmpeg/lib)
+set(ENCODE_SRC main.cpp)
 
-add_subdirectory(src)
+add_executable(ENCODE_FFMPEG ${ENCODE_SRC})
+target_link_libraries(ENCODE_FFMPEG -lavcodec -lavformat -lavutil -lpthread -lz -lswscale -lswresample -lx264 -ldl)
